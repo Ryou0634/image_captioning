@@ -1,0 +1,114 @@
+{
+    "dataset_reader": {
+        "type": "flickr",
+        "caption_file_path": "/data/11/corpora/flickr30k/flickr30k/results_20130124.token",
+        "image_feature_filename_path": "data/flickr30k_image_features/image_filenames_vgg16_layer31.txt",
+        "image_feature_path": "data/flickr30k_image_features/vgg16_layer31.npy"
+    },
+    "model": {
+        "type": "image_caption_generator",
+        "attention_regularization_term": 1,
+        "beam_size": 5,
+        "decoder": {
+            "type": "bahdanau2015_decoder",
+            "attention": {
+                "type": "additive",
+                "matrix_dim": 512,
+                "vector_dim": 512
+            },
+            "hidden_size": 512,
+            "input_size": 1024,
+            "num_layers": 2,
+            "output_size": 512
+        },
+        "image_feature_processor": {
+            "type": "sequence",
+            "input_size": 512,
+            "output_size": 512
+        },
+        "initializer": {
+            "prevent_regexes": [
+                ".*bias.*"
+            ],
+            "regexes": [
+                [
+                    ".*",
+                    {
+                        "a": -0.1,
+                        "b": 0.1,
+                        "type": "uniform"
+                    }
+                ]
+            ]
+        },
+        "label_smoothing": 0,
+        "max_decoding_length": 50,
+        "target_embedder": {
+            "type": "basic",
+            "token_embedders": {
+                "tokens": {
+                    "type": "embedding",
+                    "embedding_dim": 512,
+                    "trainable": true,
+                    "vocab_namespace": "tgt_tokens"
+                }
+            }
+        },
+        "tgt_vocab_namespace": "tgt_tokens",
+        "tie_target_weights": true
+    },
+    "train_data_path": "data/flickr30k_splits/train.txt",
+    "validation_data_path": "data/flickr30k_splits/val.txt",
+    "test_data_path": "data/flickr30k_splits/test.txt",
+    "trainer": {
+        "cuda_device": 8,
+        "epoch_callbacks": [
+            {
+                "input_name_spaces": {
+                    "target_tokens": "tgt_tokens"
+                },
+                "output_name_spaces": {
+                    "predicted_tokens": "tgt_tokens"
+                },
+                "type": "log_tokens"
+            }
+        ],
+        "grad_norm": 5,
+        "learning_rate_scheduler": {
+            "type": "reduce_on_plateau",
+            "factor": 0.5,
+            "mode": "min",
+            "patience": 1,
+            "verbose": true
+        },
+        "num_epochs": 50,
+        "optimizer": {
+            "type": "adam",
+            "lr": 0.001
+        },
+        "patience": 3,
+        "validation_metric": "+bleu"
+    },
+    "vocabulary": {
+        "type": "from_instances",
+        "tokens_to_add": {
+            "tgt_tokens": [
+                "@start@",
+                "@end@"
+            ]
+        }
+    },
+    "data_loader": {
+        "batch_sampler": {
+            "type": "bucket",
+            "batch_size": 32,
+            "padding_noise": 0.1,
+            "sorting_keys": [
+                "target_tokens"
+            ]
+        }
+    },
+    "numpy_seed": 0,
+    "pytorch_seed": 0,
+    "random_seed": 0
+}

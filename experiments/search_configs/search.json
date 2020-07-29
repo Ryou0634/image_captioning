@@ -1,0 +1,4 @@
+{
+  "trainer.optimizer.lr": [1e-3, 7.5e-4, 5e-4],
+  "data_loader.batch_sampler.batch_size": [16, 32, 48]
+}
